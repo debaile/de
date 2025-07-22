@@ -1,147 +1,504 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="de"> <!-- El idioma por defecto es alemán -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agenda de Baile - Frankfurt</title>
+    <title data-lang="title">Dein Tanzkalender - Wähle deine Stadt</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* Define color variables for both themes */
-        :root {
-            --bg-color: #111827;
-            --card-bg-color: #1F2937;
-            --text-color: #E5E7EB;
-            --text-muted-color: #9CA3AF;
-            --header-bg-color: rgba(17, 24, 39, 0.8);
-            --border-color: #4B5563;
-            --accent-color: #F59E0B; /* Amber */
-            --accent-text-color: #111827;
-        }
-
-        html.light-theme {
-            --bg-color: #F3F4F6; /* Light Gray background */
-            --card-bg-color: #FFFFFF; /* White cards */
-            --text-color: #1F2937; /* Dark Gray text */
-            --text-muted-color: #6B7280; /* Medium Gray text */
-            --header-bg-color: rgba(255, 255, 255, 0.8);
-            --border-color: #E5E7EB;
-            --accent-color: #EF4444; /* Frankfurt Red */
-            --accent-text-color: #FFFFFF;
-        }
-
         body { 
             font-family: 'Inter', sans-serif; 
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            transition: background-color 0.3s, color 0.3s;
+            background-color: #111827;
+            color: #E5E7EB;
         }
         .font-poppins { font-family: 'Poppins', sans-serif; }
-        .event-card { 
-            background-color: var(--card-bg-color); 
-            border-left: 4px solid var(--accent-color); 
-            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s; 
-            display: flex; flex-direction: column; position: relative; overflow: hidden; 
+        .hero-section {
+            background: linear-gradient(rgba(17, 24, 39, 0.8), rgba(17, 24, 39, 1)), url('https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?q=80&w=2070&auto=format&fit=crop') no-repeat center center;
+            background-size: cover;
         }
-        .event-card.featured { border: 2px solid var(--accent-color); box-shadow: 0 0 15px color-mix(in srgb, var(--accent-color) 30%, transparent); }
-        .event-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-        .featured-badge { position: absolute; top: 10px; right: -30px; background-color: var(--accent-color); color: var(--accent-text-color); padding: 2px 30px; font-weight: bold; font-size: 0.8rem; transform: rotate(45deg); z-index: 1; }
-        .artist-photo { width: 100%; height: 180px; object-fit: cover; }
-        .date-badge { background-color: var(--accent-color); color: var(--accent-text-color); }
-        .loader { border: 4px solid #f3f3f340; border-top: 4px solid var(--accent-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        .city-card {
+            background-color: #1F2937;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #374151;
+            display: flex;
+            flex-direction: column;
+        }
+        .city-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 25px rgba(245, 158, 11, 0.2);
+            border-color: #F59E0B;
+        }
+        .city-card .p-6 {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .btn-primary {
+            background-color: #F59E0B;
+            color: #111827;
+            transition: background-color 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #D97706;
+        }
+        .btn-secondary {
+            background-color: transparent;
+            color: #F59E0B;
+            border: 1px solid #F59E0B;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .btn-secondary:hover {
+            background-color: #F59E0B;
+            color: #111827;
+        }
+        .lang-switcher a {
+            transition: color 0.2s;
+        }
+        .lang-switcher a.active {
+            color: #F59E0B;
+            font-weight: bold;
+        }
+        .gemini-modal-content { background-color: #1F2937; }
+        .loader {
+            border: 4px solid #f3f3f340;
+            border-top: 4px solid #F59E0B;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .style-badge { font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 9999px; font-weight: 600; }
-        .action-btn { background-color: #374151; color: #E5E7EB; transition: background-color 0.2s; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
-        html.light-theme .action-btn { background-color: #E5E7EB; color: #1F2937; }
-        .action-btn:hover { background-color: #4B5563; }
-        html.light-theme .action-btn:hover { background-color: #D1D5DB; }
-        .action-btn.primary { background-color: var(--accent-color); color: var(--accent-text-color); }
-        .action-btn.primary:hover { background-color: color-mix(in srgb, var(--accent-color) 90%, black); }
-        .header { background-color: var(--header-bg-color); }
-        .text-muted { color: var(--text-muted-color); }
-        .card-border { border-color: var(--border-color); }
-        .filter-bg { background-color: var(--card-bg-color); }
-        .filter-select { background-color: var(--bg-color); border-color: var(--border-color); }
-        .modal-content { background-color: var(--card-bg-color); }
     </style>
 </head>
-<body>
+<body class="antialiased">
 
-    <header class="header backdrop-blur-sm shadow-lg sticky top-0 z-20">
-        <div class="container mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
+    <!-- Header -->
+    <header class="bg-gray-900/80 backdrop-blur-sm shadow-lg sticky top-0 z-20">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
             <div class="text-left">
-                 <h1 class="text-2xl md:text-3xl font-poppins font-bold"><span class="text-[color:var(--accent-color)]">Agenda de Baile</span> Frankfurt</h1>
-                 <p class="text-muted text-sm">Tu guía de eventos para planificar tu semana</p>
+                 <h1 class="text-2xl md:text-3xl font-poppins font-bold"><span class="text-amber-500" data-lang="header_brand">Tanzkalender</span> Global</h1>
             </div>
-            <div class="flex items-center space-x-2 md:space-x-4">
-                <button id="theme-switcher" class="p-2 rounded-full hover:bg-gray-700/50">
-                    <i id="theme-icon" class="fa-solid fa-moon text-xl"></i>
-                </button>
+            <div class="flex items-center space-x-6">
+                <nav class="hidden md:flex items-center space-x-4">
+                    <a href="#ciudades" class="text-gray-300 hover:text-amber-500 px-3 py-2 rounded-md text-sm font-medium" data-lang="nav_cities">Städte</a>
+                    <a href="#features" class="text-gray-300 hover:text-amber-500 px-3 py-2 rounded-md text-sm font-medium" data-lang="nav_why">Warum wir?</a>
+                </nav>
+                <div class="lang-switcher flex items-center space-x-3 text-sm font-medium text-gray-400">
+                    <a href="#de" data-lang-switch="de" class="hover:text-white">DE</a>
+                    <a href="#en" data-lang-switch="en" class="hover:text-white">EN</a>
+                    <a href="#es" data-lang-switch="es" class="hover:text-white">ES</a>
+                </div>
             </div>
         </div>
     </header>
 
-    <main class="container mx-auto px-4 sm:px-6 py-8 md:py-12">
-        <!-- Filter Section -->
-        <div class="filter-bg p-4 md:p-6 rounded-lg mb-8 shadow-md">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                <div><label for="style-filter" class="block text-sm font-medium text-muted mb-1">Estilo</label><select id="style-filter" class="filter-select w-full rounded-lg p-2"></select></div>
-                <div><label for="city-filter" class="block text-sm font-medium text-muted mb-1">Ciudad</label><select id="city-filter" class="filter-select w-full rounded-lg p-2"></select></div>
-                <div><label for="cost-filter" class="block text-sm font-medium text-muted mb-1">Coste Máximo: <span id="cost-value">€50</span></label><input type="range" id="cost-filter" min="0" max="50" value="50" class="w-full"></div>
-                <div class="flex items-end"><button id="reset-filters" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Limpiar</button></div>
-                <div class="flex items-end"><button id="add-event-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg"><i class="fa-solid fa-plus mr-2"></i>Publica tu Evento</button></div>
-            </div>
+    <!-- Hero Section -->
+    <section class="hero-section text-white text-center py-20 md:py-32">
+        <div class="container mx-auto px-6">
+            <h2 class="text-4xl md:text-6xl font-poppins font-bold mb-4" data-lang="hero_title">Finde deinen nächsten Tanz</h2>
+            <p class="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mb-8" data-lang="hero_subtitle">Der umfassendste Guide für Social-Dance-Events in deiner Stadt. Salsa, Bachata, Kizomba und vieles mehr. Entdecken, auswählen und tanzen!</p>
+            <a href="#ciudades" class="btn-primary font-bold py-3 px-8 rounded-full text-lg">
+                <i class="fa-solid fa-map-location-dot mr-2"></i>
+                <span data-lang="hero_button">Städte ansehen</span>
+            </a>
         </div>
-        <div id="events-container" class="space-y-12"><div class="flex justify-center items-center h-40"><div class="loader"></div></div><p class="text-center text-muted">Cargando eventos...</p></div>
+    </section>
+
+    <!-- City Selection Section -->
+    <main id="ciudades" class="container mx-auto px-6 py-16 md:py-24">
+        <div class="text-center mb-12">
+            <h3 class="text-3xl md:text-4xl font-bold font-poppins" data-lang="cities_title">Wähle deine Tanzszene</h3>
+            <p class="text-gray-400 mt-2" data-lang="cities_subtitle">Wir expandieren ständig. Beginne mit der Auswahl einer Stadt.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            
+            <!-- City Card: Frankfurt -->
+            <div class="city-card" data-city-name="Frankfurt">
+                <div class="p-6">
+                    <div>
+                        <h4 class="text-2xl font-bold font-poppins mb-2">Frankfurt</h4>
+                        <p class="text-gray-400 mb-4" data-lang="frankfurt_desc">Das Finanzherz Deutschlands schlägt auch im Rhythmus von Salsa und Bachata.</p>
+                    </div>
+                    <div class="mt-4 flex flex-col space-y-2">
+                        <a href="/frankfurt-main" class="btn-primary font-semibold py-2 px-4 rounded-lg text-center">
+                            <span data-lang="card_button">Kalender ansehen</span> <i class="fa-solid fa-arrow-right ml-2"></i>
+                        </a>
+                        <button class="btn-secondary font-semibold py-2 px-4 rounded-lg gemini-trigger">
+                            ✨ <span data-lang="why_dance_button">Warum hier tanzen?</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- City Card: Berlin -->
+            <div class="city-card" data-city-name="Berlin">
+                <div class="p-6">
+                    <div>
+                        <h4 class="text-2xl font-bold font-poppins mb-2">Berlín</h4>
+                        <p class="text-gray-400 mb-4" data-lang="berlin_desc">Entdecke die lebendige und vielfältige Tanzszene der deutschen Hauptstadt.</p>
+                    </div>
+                    <div class="mt-4 flex flex-col space-y-2">
+                        <a href="#" class="btn-primary font-semibold py-2 px-4 rounded-lg text-center opacity-50 cursor-not-allowed" aria-disabled="true">
+                            <span data-lang="card_soon">Demnächst...</span>
+                        </a>
+                        <button class="btn-secondary font-semibold py-2 px-4 rounded-lg gemini-trigger">
+                             ✨ <span data-lang="why_dance_button_2">Warum hier tanzen?</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- City Card: Munich -->
+            <div class="city-card" data-city-name="Munich">
+                <div class="p-6">
+                    <div>
+                        <h4 class="text-2xl font-bold font-poppins mb-2">Múnich</h4>
+                        <p class="text-gray-400 mb-4" data-lang="munich_desc">Bayerische Tradition trifft auf lateinamerikanische Rhythmen. Eine einzigartige Mischung!</p>
+                    </div>
+                     <div class="mt-4 flex flex-col space-y-2">
+                        <a href="#" class="btn-primary font-semibold py-2 px-4 rounded-lg text-center opacity-50 cursor-not-allowed" aria-disabled="true">
+                            <span data-lang="card_soon_2">Demnächst...</span>
+                        </a>
+                        <button class="btn-secondary font-semibold py-2 px-4 rounded-lg gemini-trigger">
+                             ✨ <span data-lang="why_dance_button_3">Warum hier tanzen?</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- City Card: Madrid -->
+            <div class="city-card" data-city-name="Madrid">
+                <div class="p-6">
+                    <div>
+                        <h4 class="text-2xl font-bold font-poppins mb-2">Madrid</h4>
+                        <p class="text-gray-400 mb-4" data-lang="madrid_desc">Die spanische Hauptstadt, wo jede Nacht eine Party mit Salsa, Bachata und Flamenco ist.</p>
+                    </div>
+                    <div class="mt-4 flex flex-col space-y-2">
+                        <a href="#" class="btn-primary font-semibold py-2 px-4 rounded-lg text-center opacity-50 cursor-not-allowed" aria-disabled="true">
+                            <span data-lang="card_soon_3">Demnächst...</span>
+                        </a>
+                        <button class="btn-secondary font-semibold py-2 px-4 rounded-lg gemini-trigger">
+                             ✨ <span data-lang="why_dance_button_4">Warum hier tanzen?</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- City Card: Santiago -->
+            <div class="city-card" data-city-name="Santiago de Chile">
+                <div class="p-6">
+                    <div>
+                        <h4 class="text-2xl font-bold font-poppins mb-2">Santiago</h4>
+                        <p class="text-gray-400 mb-4" data-lang="santiago_desc">Tanze mit der Andenkordillere im Hintergrund in der pulsierenden Hauptstadt Chiles.</p>
+                    </div>
+                    <div class="mt-4 flex flex-col space-y-2">
+                        <a href="#" class="btn-primary font-semibold py-2 px-4 rounded-lg text-center opacity-50 cursor-not-allowed" aria-disabled="true">
+                            <span data-lang="card_soon_4">Demnächst...</span>
+                        </a>
+                        <button class="btn-secondary font-semibold py-2 px-4 rounded-lg gemini-trigger">
+                             ✨ <span data-lang="why_dance_button_5">Warum hier tanzen?</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </main>
 
-    <footer class="bg-gray-900 mt-12">
-        <div class="container mx-auto px-6 py-4 text-center text-gray-500">
-            <p>Página creada con ❤️ para la comunidad de baile de Frankfurt.</p>
-            <p class="text-sm mt-1">Recuerda verificar los detalles antes de asistir a un evento.</p>
-            <p class="text-xs mt-2">Última actualización: <span id="last-updated">--</span></p>
+    <!-- Features Section -->
+    <section id="features" class="bg-gray-900 py-16 md:py-24">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl md:text-4xl font-bold font-poppins" data-lang="features_title">Alles, was du brauchst, an einem Ort</h3>
+                <p class="text-gray-400 mt-2" data-lang="features_subtitle">Von Tänzern für Tänzer entworfen.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10 text-center">
+                <div class="feature-item">
+                    <div class="text-amber-500 text-4xl mb-4"><i class="fa-solid fa-calendar-check"></i></div>
+                    <h4 class="text-xl font-bold mb-2" data-lang="feature1_title">Aktualisierter Kalender</h4>
+                    <p class="text-gray-400" data-lang="feature1_desc">Ständig überprüfte und aktualisierte Event-Listen, damit du nichts verpasst.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="text-amber-500 text-4xl mb-4"><i class="fa-solid fa-filter"></i></div>
+                    <h4 class="text-xl font-bold mb-2" data-lang="feature2_title">Intelligente Filter</h4>
+                    <p class="text-gray-400" data-lang="feature2_desc">Finde genau das, was du suchst, indem du nach Tanzstil, Preis oder Stadt filterst.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="text-amber-500 text-4xl mb-4"><i class="fa-solid fa-users"></i></div>
+                    <h4 class="text-xl font-bold mb-2" data-lang="feature3_title">Community-betrieben</h4>
+                    <p class="text-gray-400" data-lang="feature3_desc">Veröffentliche deine eigenen Events und hilf mit, die Informationen für alle korrekt zu halten.</p>
+                </div>
+            </div>
         </div>
-    </footer>
+    </section>
     
-    <!-- Modals -->
-    <div id="ticket-modal" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex justify-center items-center p-4 z-50 hidden">
-        <div class="modal-content rounded-lg shadow-xl w-full max-w-md max-h-full overflow-y-auto relative">
+    <!-- Gemini Modal -->
+    <div id="gemini-modal" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex justify-center items-center p-4 z-50 hidden">
+        <div class="gemini-modal-content rounded-lg shadow-xl w-full max-w-2xl max-h-full overflow-y-auto relative">
             <div class="p-6">
-                <div class="flex justify-between items-start"><h3 class="text-xl font-bold text-[color:var(--accent-color)] mb-4">Información de Entradas</h3><button id="modal-close-btn" class="text-muted hover:text-[color:var(--text-color)] text-3xl leading-none">&times;</button></div>
-                <div class="text-muted"><p>El organizador no ha proporcionado información para la compra de entradas online.</p><p class="mt-2">Esto podría indicar que la venta se realiza directamente en la puerta.</p><p class="mt-4 font-semibold">Para estar seguro, te recomendamos revisar la información oficial o ponerte en contacto con el organizador a través de su Instagram.</p></div>
+                <div class="flex justify-between items-start mb-4">
+                    <h3 id="gemini-modal-title" class="text-2xl font-bold font-poppins text-amber-500"></h3>
+                    <button id="gemini-modal-close-btn" class="text-gray-400 hover:text-white text-3xl leading-none">&times;</button>
+                </div>
+                <div id="gemini-modal-body" class="text-gray-300 prose prose-invert max-w-none">
+                    <div class="flex justify-center items-center h-40">
+                        <div class="loader"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <div id="add-event-modal" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex justify-center items-center p-4 z-50 hidden">
-        <div class="modal-content rounded-lg shadow-xl w-full max-w-2xl max-h-full overflow-y-auto relative">
-            <form id="add-event-form" class="p-6">
-                <div class="flex justify-between items-start"><h3 id="form-title" class="text-xl font-bold text-[color:var(--accent-color)] mb-4">Publica tu Evento</h3><button type="button" id="add-event-modal-close-btn" class="text-muted hover:text-[color:var(--text-color)] text-3xl leading-none">&times;</button></div>
-                <div id="form-content" class="space-y-4">
-                    <p id="form-description" class="text-sm text-muted">Completa el formulario para que tu evento aparezca en la agenda. Lo revisaremos y publicaremos a la brevedad.</p>
-                    
-                    <!-- Hidden fields for correction requests -->
-                    <input type="hidden" name="entry.901234567" id="correction-flag">
-                    <input type="hidden" name="entry.012345678" id="original-event-title">
 
-                    <!-- Visible fields -->
-                    <input type="text" name="entry.123456789" placeholder="Título del Evento" class="filter-select w-full rounded-lg p-2" required>
-                    <input type="text" name="entry.234567890" placeholder="Organizador" class="filter-select w-full rounded-lg p-2" required>
-                    <input type="text" name="entry.345678901" placeholder="Fecha (ej. Sábado, 12 de Julio)" class="filter-select w-full rounded-lg p-2" required>
-                    <input type="text" name="entry.456789012" placeholder="Ubicación (ej. Club Chango, Str. 57)" class="filter-select w-full rounded-lg p-2" required>
-                    <input type="text" name="entry.567890123" placeholder="Estilos de Baile (separados por comas)" class="filter-select w-full rounded-lg p-2" required>
-                    <input type="text" name="entry.678901234" placeholder="Coste (ej. €10, Donación, etc.)" class="filter-select w-full rounded-lg p-2" required>
-                    <input type="url" name="entry.789012345" placeholder="Enlace a Instagram" class="filter-select w-full rounded-lg p-2" required>
-                    <input type="url" name="entry.890123456" placeholder="Enlace para Entradas (opcional)" class="filter-select w-full rounded-lg p-2">
-                    
-                    <div class="text-right"><button type="submit" class="action-btn primary font-bold py-2 px-6 rounded-lg">Enviar</button></div>
-                </div>
-                <div id="form-success-message" class="hidden text-center py-10"><h3 class="text-2xl font-bold text-green-400">¡Gracias!</h3><p class="text-muted mt-2">Hemos recibido tu envío. Lo revisaremos y publicaremos pronto.</p></div>
-            </form>
+
+    <!-- Footer -->
+    <footer class="bg-gray-950">
+        <div class="container mx-auto px-6 py-6 text-center text-gray-500">
+            <p data-lang="footer_love">Mit ❤️ für die globale Tanz-Community erstellt.</p>
+            <p class="text-sm mt-1" data-lang="footer_dance">Wir sehen uns auf der Tanzfläche!</p>
         </div>
-    </div>
+    </footer>
 
-    <script src="script.js" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const translations = {
+        de: {
+            title: "Dein Tanzkalender - Wähle deine Stadt",
+            header_brand: "Tanzkalender",
+            nav_cities: "Städte",
+            nav_why: "Warum wir?",
+            hero_title: "Finde deinen nächsten Tanz",
+            hero_subtitle: "Der umfassendste Guide für Social-Dance-Events in deiner Stadt. Salsa, Bachata, Kizomba und vieles mehr. Entdecken, auswählen und tanzen!",
+            hero_button: "Städte ansehen",
+            cities_title: "Wähle deine Tanzszene",
+            cities_subtitle: "Wir expandieren ständig. Beginne mit der Auswahl einer Stadt.",
+            frankfurt_desc: "Das Finanzherz Deutschlands schlägt auch im Rhythmus von Salsa und Bachata.",
+            berlin_desc: "Entdecke die lebendige und vielfältige Tanzszene der deutschen Hauptstadt.",
+            munich_desc: "Bayerische Tradition trifft auf lateinamerikanische Rhythmen. Eine einzigartige Mischung!",
+            madrid_desc: "Die spanische Hauptstadt, wo jede Nacht eine Party mit Salsa, Bachata und Flamenco ist.",
+            santiago_desc: "Tanze mit der Andenkordillere im Hintergrund in der pulsierenden Hauptstadt Chiles.",
+            card_button: "Kalender ansehen",
+            why_dance_button: "Warum hier tanzen?",
+            why_dance_button_2: "Warum hier tanzen?",
+            why_dance_button_3: "Warum hier tanzen?",
+            why_dance_button_4: "Warum hier tanzen?",
+            why_dance_button_5: "Warum hier tanzen?",
+            card_soon: "Demnächst...",
+            card_soon_2: "Demnächst...",
+            card_soon_3: "Demnächst...",
+            card_soon_4: "Demnächst...",
+            features_title: "Alles, was du brauchst, an einem Ort",
+            features_subtitle: "Von Tänzern für Tänzer entworfen.",
+            feature1_title: "Aktualisierter Kalender",
+            feature1_desc: "Ständig überprüfte und aktualisierte Event-Listen, damit du nichts verpasst.",
+            feature2_title: "Intelligente Filter",
+            feature2_desc: "Finde genau das, was du suchst, indem du nach Tanzstil, Preis oder Stadt filterst.",
+            feature3_title: "Community-betrieben",
+            feature3_desc: "Veröffentliche deine eigenen Events und hilf mit, die Informationen für alle korrekt zu halten.",
+            footer_love: "Mit ❤️ für die globale Tanz-Community erstellt.",
+            footer_dance: "Wir sehen uns auf der Tanzfläche!",
+            gemini_modal_title_prefix: "Tanzen in",
+            gemini_error: "Entschuldigung, die magische Kugel ist gerade etwas trüb. Bitte versuche es später noch einmal.",
+            gemini_prompt: "Beschreibe in einem kurzen, spannenden Absatz, warum {cityName} eine fantastische Stadt für Gesellschaftstanz (Salsa, Bachata) ist. Erwähne die Atmosphäre, die Leute und was sie für einen besuchenden Tänzer einzigartig macht. Antworte auf Deutsch.",
+        },
+        en: {
+            title: "Your Dance Agenda - Choose Your City",
+            header_brand: "Dance Agenda",
+            nav_cities: "Cities",
+            nav_why: "Why us?",
+            hero_title: "Find Your Next Dance",
+            hero_subtitle: "The most complete guide to social dance events in your city. Salsa, Bachata, Kizomba, and much more. Explore, choose, and dance!",
+            hero_button: "View Cities",
+            cities_title: "Choose Your Dance Scene",
+            cities_subtitle: "We are constantly expanding. Start by selecting a city.",
+            frankfurt_desc: "Germany's financial heart also beats to the rhythm of salsa and bachata.",
+            berlin_desc: "Discover the vibrant and diverse dance scene in the German capital.",
+            munich_desc: "Bavarian tradition meets Latin rhythms. A unique mix!",
+            madrid_desc: "The Spanish capital, where every night is a party of salsa, bachata, and flamenco.",
+            santiago_desc: "Dance with the Andes mountains in the background in the vibrant capital of Chile.",
+            card_button: "View Agenda",
+            why_dance_button: "Why dance here?",
+            why_dance_button_2: "Why dance here?",
+            why_dance_button_3: "Why dance here?",
+            why_dance_button_4: "Why dance here?",
+            why_dance_button_5: "Why dance here?",
+            card_soon: "Coming soon...",
+            card_soon_2: "Coming soon...",
+            card_soon_3: "Coming soon...",
+            card_soon_4: "Coming soon...",
+            features_title: "Everything You Need in One Place",
+            features_subtitle: "Designed by dancers, for dancers.",
+            feature1_title: "Updated Agenda",
+            feature1_desc: "Constantly reviewed and updated event listings so you don't miss a thing.",
+            feature2_title: "Smart Filters",
+            feature2_desc: "Find exactly what you're looking for by filtering by dance style, price, or city.",
+            feature3_title: "Community-Driven",
+            feature3_desc: "Post your own events and help keep the information accurate for everyone.",
+            footer_love: "Made with ❤️ for the global dance community.",
+            footer_dance: "See you on the dance floor!",
+            gemini_modal_title_prefix: "Dancing in",
+            gemini_error: "Sorry, the magic ball is a bit cloudy right now. Please try again later.",
+            gemini_prompt: "Describe in a short, exciting paragraph why {cityName} is a fantastic city for social dancing (salsa, bachata). Mention the atmosphere, the people, and what makes it unique for a dancer visiting the city. Respond in English.",
+        },
+        es: {
+            title: "Tu Agenda de Baile - Elige tu Ciudad",
+            header_brand: "Agenda de Baile",
+            nav_cities: "Ciudades",
+            nav_why: "¿Por qué nosotros?",
+            hero_title: "Encuentra tu Próximo Baile",
+            hero_subtitle: "La guía más completa de eventos de baile social en tu ciudad. Salsa, Bachata, Kizomba y mucho más. ¡Explora, elige y a bailar!",
+            hero_button: "Ver Ciudades",
+            cities_title: "Elige tu Escena de Baile",
+            cities_subtitle: "Estamos en constante expansión. Comienza seleccionando una ciudad.",
+            frankfurt_desc: "El corazón financiero de Alemania también late al ritmo de la salsa y la bachata.",
+            berlin_desc: "Descubre la vibrante y diversa escena de baile en la capital alemana.",
+            munich_desc: "La tradición bávara se encuentra con los ritmos latinos. ¡Una mezcla única!",
+            madrid_desc: "La capital española, donde cada noche es una fiesta de salsa, bachata y flamenco.",
+            santiago_desc: "Baila con la cordillera de los Andes de fondo en la vibrante capital de Chile.",
+            card_button: "Ver Agenda",
+            why_dance_button: "¿Por qué bailar aquí?",
+            why_dance_button_2: "¿Por qué bailar aquí?",
+            why_dance_button_3: "¿Por qué bailar aquí?",
+            why_dance_button_4: "¿Por qué bailar aquí?",
+            why_dance_button_5: "¿Por qué bailar aquí?",
+            card_soon: "Próximamente...",
+            card_soon_2: "Próximamente...",
+            card_soon_3: "Próximamente...",
+            card_soon_4: "Próximamente...",
+            features_title: "Todo lo que Necesitas en un Solo Lugar",
+            features_subtitle: "Diseñado por bailarines, para bailarines.",
+            feature1_title: "Agenda Actualizada",
+            feature1_desc: "Listados de eventos revisados y actualizados constantemente para que no te pierdas nada.",
+            feature2_title: "Filtros Inteligentes",
+            feature2_desc: "Encuentra exactamente lo que buscas filtrando por estilo de baile, precio o ciudad.",
+            feature3_title: "Impulsado por la Comunidad",
+            feature3_desc: "Publica tus propios eventos y ayuda a mantener la información precisa para todos.",
+            footer_love: "Página creada con ❤️ para la comunidad de baile global.",
+            footer_dance: "¡Nos vemos en la pista de baile!",
+            gemini_modal_title_prefix: "Bailando en",
+            gemini_error: "Lo sentimos, la bola mágica está un poco turbia en este momento. Por favor, inténtalo de nuevo más tarde.",
+            gemini_prompt: "Describe en un párrafo corto y emocionante por qué {cityName} es una ciudad fantástica para el baile social (salsa, bachata). Menciona la atmósfera, la gente y lo que la hace única para un bailarín que la visita. Responde en español.",
+        }
+    };
+
+    const langSwitchers = document.querySelectorAll('[data-lang-switch]');
+    let currentLang = 'de';
+    
+    const setLanguage = (lang) => {
+        if (!translations[lang]) return;
+        
+        currentLang = lang;
+        document.documentElement.lang = lang;
+        localStorage.setItem('lang', lang);
+        
+        document.querySelectorAll('[data-lang]').forEach(el => {
+            const key = el.getAttribute('data-lang');
+            if (translations[lang][key]) {
+                el.textContent = translations[lang][key];
+            }
+        });
+
+        langSwitchers.forEach(switcher => {
+            if (switcher.getAttribute('data-lang-switch') === lang) {
+                switcher.classList.add('active');
+            } else {
+                switcher.classList.remove('active');
+            }
+        });
+    };
+
+    const getInitialLanguage = () => {
+        const savedLang = localStorage.getItem('lang');
+        if (savedLang && translations[savedLang]) {
+            return savedLang;
+        }
+
+        const browserLang = navigator.language.split('-')[0];
+        if (translations[browserLang]) {
+            return browserLang;
+        }
+        
+        return 'de';
+    };
+
+    langSwitchers.forEach(switcher => {
+        switcher.addEventListener('click', (e) => {
+            e.preventDefault();
+            const lang = e.target.getAttribute('data-lang-switch');
+            setLanguage(lang);
+        });
+    });
+
+    const initialLang = getInitialLanguage();
+    setLanguage(initialLang);
+
+    // --- Gemini Modal Logic ---
+    const geminiModal = document.getElementById('gemini-modal');
+    const geminiModalCloseBtn = document.getElementById('gemini-modal-close-btn');
+    const geminiModalTitle = document.getElementById('gemini-modal-title');
+    const geminiModalBody = document.getElementById('gemini-modal-body');
+    const geminiTriggers = document.querySelectorAll('.gemini-trigger');
+    const loaderHTML = `<div class="flex justify-center items-center h-40"><div class="loader"></div></div>`;
+
+    const showGeminiModal = () => geminiModal.classList.remove('hidden');
+    const hideGeminiModal = () => geminiModal.classList.add('hidden');
+
+    geminiModalCloseBtn.addEventListener('click', hideGeminiModal);
+    geminiModal.addEventListener('click', (e) => {
+        if (e.target === geminiModal) {
+            hideGeminiModal();
+        }
+    });
+
+    geminiTriggers.forEach(button => {
+        button.addEventListener('click', async () => {
+            const card = button.closest('.city-card');
+            const cityName = card.dataset.cityName;
+
+            geminiModalTitle.textContent = `${translations[currentLang].gemini_modal_title_prefix} ${cityName}`;
+            geminiModalBody.innerHTML = loaderHTML;
+            showGeminiModal();
+
+            const promptTemplate = translations[currentLang].gemini_prompt;
+            const prompt = promptTemplate.replace('{cityName}', cityName);
+            
+            try {
+                let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+                const payload = { contents: chatHistory };
+                const apiKey = ""; // API key will be injected by the environment
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API request failed with status ${response.status}`);
+                }
+                
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    geminiModalBody.innerHTML = `<p>${text.replace(/\n/g, '<br>')}</p>`;
+                } else {
+                    throw new Error("Invalid response structure from API");
+                }
+            } catch (error) {
+                console.error("Error calling Gemini API:", error);
+                geminiModalBody.innerHTML = `<p class="text-red-400">${translations[currentLang].gemini_error}</p>`;
+            }
+        });
+    });
+});
+</script>
 
 </body>
 </html>
